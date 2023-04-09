@@ -1,40 +1,24 @@
 import SimpleITK as sitk
-import numpy as np
-from monai.transforms import (Compose, 
-                              Rotate, 
-                              RandStdShiftIntensity,
-                              RandHistogramShift, 
-                              RandFlip, 
-                              Randomizable, 
-                              RandScaleIntensity,
-                              RandAdjustContrast,
-                              RandGaussianSmooth,
-                              RandZoom)
+from utils import (drop_duplicate_images, check_paths_exists, string_equals)
+from augmentation_types import RANDOM_AUGMENTATION
+from RandomTransform import RandomTransform
 
-class RandomTransform(Randomizable):
-    def __init__(self):
-        super().__init__()
-
-    def __call__(self, image):
-        self.set_random_state(seed=np.random.randint(0, 10000))
-        transform = Compose([
-            # vanilla transforms
-            ## intensity
-            RandStdShiftIntensity(prob=0.5, factors=1),
-            RandHistogramShift(prob=0.5),
-            RandScaleIntensity(prob=0.5,  factors=1),
-            RandAdjustContrast(prob=0.5),
-            RandGaussianSmooth(prob=0.5),
-            ## spatial
-            RandFlip(prob=0.5),
-            RandZoom(prob=0.5, min_zoom=0.8, max_zoom=1.1),
-        ])
-        return transform(image)
-
+# This is the function that the user will call from the outside
+def augment(image_paths, augmentation_type=RANDOM_AUGMENTATION, num_transformations=10):
+    paths_exists, wrong_path = check_paths_exists(image_paths)
+    if(paths_exists):
+        if(string_equals(augmentation_type, RANDOM_AUGMENTATION)):
+            return random_augment(image_paths, num_transformations)
+        else:
+            return f'AugmentationType {augmentation_type} not supported'
+    else:
+        return f'{wrong_path} not founded!'
+    
+# "random_augment" function
 # An internal loop is used within the comprehensive list to apply NUM_TRANSFORMATIONS transformations to each image.
-# The Sitk.GetarrayFromimage function is used to convert each image into an array number, which is then moved to the RandomTransform.
-# Finally, the Sitk.GetimageFromarray function is used to convert the resulting array number in a Simpleitk image.
-def augment(image_files, num_transformations=10):
+# The Sitk.GetArrayFromImage function is used to convert each image into an array number, which is then moved to the RandomTransform.
+# Finally, the Sitk.GetImageFromArray function is used to convert the resulting array number in a Simpleitk image.
+def random_augment(image_files, num_transformations=10):
     images = [sitk.ReadImage(file) for file in image_files]
 
     augmented_images = [
@@ -45,4 +29,4 @@ def augment(image_files, num_transformations=10):
         for _ in range(num_transformations)
     ]
 
-    return augmented_images
+    return drop_duplicate_images(augmented_images)

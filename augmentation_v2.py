@@ -1,51 +1,58 @@
 from monai.data import (
     CacheDataset,
-    DataLoader,
+    DataLoader
 )
 from monai.transforms import (
     EnsureChannelFirstd,
     Compose,
     LoadImaged,
-    Orientationd,
+    Zoomd,
+    RandRotated,
 )
-import matplotlib.pyplot as plt
-import SimpleITK as sitk
+import matplotlib.pyplot as plt, SimpleITK as sitk
 
-def get_transforms(transforms):
+
+def get_transforms(transform):
     return Compose(
-        [
-            LoadImaged(keys=["image", "label"], image_only=True),
-            EnsureChannelFirstd(keys=["image", "label"]),
-            Orientationd(keys=["image", "label"], axcodes="RAS"),
-            transforms
-        ]
-    )
-    
-data_list = [
-    {"image": "./data/MedNIST/AbdomenCT/000000.jpeg", "label": "./data/MedNIST/AbdomenCT/000001.jpeg"},
-    {"image": "./data/MedNIST/AbdomenCT/000000.jpeg", "label": "./data/MedNIST/AbdomenCT/000001.jpeg"},
+                [
+                    LoadImaged(keys=["image", "label"], image_only=True),
+                    EnsureChannelFirstd(keys=["image", "label"]),
+                    transform,
+                ]
+            )
+
+def get_dict_list(images, labels):
+    return [
+    {"image": image, "label": label} for image, label in zip(images, labels)
+]      
+
+def augment(images,labels,transforms):
+    data_dict_list = get_dict_list(images, labels)
+    print(f"paths: {data_dict_list}")
+
+    augmented_images = []
+    for _, transform in enumerate(transforms):
+        temp_transform = get_transforms(transform)
+        cache_augm_ds = CacheDataset(
+        data=data_dict_list,
+        transform=temp_transform,
+        cache_rate=1.0,
+        runtime_cache="processes",
+        copy_cache=False,
+        ),
+
+        for img in cache_augm_ds:
+            data = DataLoader(img, batch_size=1, num_workers=4)
+            [augmented_images.append(batch_data) for batch_data in data] 
+    return augmented_images
+
+
+# example data
+images = ["./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg"]
+labels = ["./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg", "./data/MedNIST/AbdomenCT/000000.jpeg"]
+transforms = [
+    Zoomd(keys=["image", "label"], zoom=0.4),
+    RandRotated(keys=["image", "label"], prob=1, range_x=[0.4, 0.4]),
 ]
 
-transforms = []
-
-trans = get_transforms(transforms)
-
-cache_augm_ds = CacheDataset(
-    data=data_list, transform=trans, cache_rate=1.0, runtime_cache="processes", copy_cache=False
-)
-
-data = DataLoader(
-        cache_augm_ds,
-        batch_size=2,
-        shuffle=True,
-        num_workers=0,
-    )
-
-# for batch_data in data:
-#   # Plot the images using matplotlib
-#   fig, ax = plt.subplots(1, 2)
-#   ax[0].imshow(sitk.GetImageFromArray(batch_data["image"]))
-#   ax[0].set_title('Original')
-#   ax[1].imshow(sitk.GetImageFromArray(batch_data["label"]))
-#   ax[1].set_title('Transformed')
-#   plt.show()
+print(augment(images,labels,transforms))

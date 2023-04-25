@@ -95,6 +95,7 @@ class TransformableDataLoader(DataLoader):
 
 def get_transforms(transform):
     if(torch.cuda.is_available()):
+        print(f'GPU found: {torch.cuda.get_device_name()}')
         return Compose(
                     [
                         LoadImaged(keys=["img", "seg"],image_only=True, ensure_channel_first=True), 
@@ -104,6 +105,7 @@ def get_transforms(transform):
                         transform
                     ]
                 )
+    print('GPU not found, CPU will be used!')
     return Compose(
                     [
                         LoadImaged(keys=["img", "seg"],image_only=True, ensure_channel_first=True), 
@@ -162,6 +164,8 @@ def augment(images, segmentations, transforms):
 
 
 import os
+from monai.transforms import Zoomd, Rotated
+
 paths = ['./data/PDDCA-1.4.1_part1', './data/PDDCA-1.4.1_part2']
 
 images = []
@@ -174,6 +178,6 @@ for p in paths:
 
 transforms = [
     Zoomd(keys=["img", "seg"], zoom=0.5),
-    RandRotated(keys=["img", "seg"], prob=1, range_x=[0.4, 0.4]),
+    Rotated(keys=["img", "seg"], angle=35),
 ]
 augmented_images = augment(images, segmentations, transforms)

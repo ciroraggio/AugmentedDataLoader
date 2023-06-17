@@ -2,3 +2,4 @@ __pycache__/*
 .vscode/*
 data/PDDCA-1.4.1_part1/*
 data/PDDCA-1.4.1_part2/*
+data/debug_path_test/*

@@ -105,11 +105,14 @@ class AugmentedDataLoader:
                 if self.debug_path:
                     for i, data in enumerate(block):
                         image = data[0]
-                        central_slice = image[image.shape[0] // 2] # Estraggo la fetta centrale sul primo canale
+                        central_slice = image[image.shape[0] // 2]  # Estraggo la fetta centrale sul primo canale
+                        normalized_slice = (central_slice - central_slice.min()) / (central_slice.max() - central_slice.min())
                         debug_image_path = os.path.join(self.debug_path, f"augmented_image_{image_count}.png")
-                        vutils.save_image(central_slice, debug_image_path)
+                        vutils.save_image(normalized_slice, debug_image_path)
                         image_count += 1
 
+                        
+                block = [data.float() for data in block]  # Conversione dei tensori delle immagini a float32
                 batch = torch.stack(block)
                 yield batch
 

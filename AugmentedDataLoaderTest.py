@@ -8,19 +8,19 @@ class AugmentedDataLoaderTest(unittest.TestCase):
     def test_generate_batches(self):
         # Define test inputs
         images_to_transform = [
-            "./data/PDDCA-1.4.1_part1/0522c0001/img.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0002/img.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0003/img.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0009/img.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0013/img.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0001/img.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0002/img.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0003/img.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0009/img.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0013/img.nrrd",
         ]
 
         labels_to_transform = [
-            "./data/PDDCA-1.4.1_part1/0522c0001/structures/BrainStem.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0002/structures/BrainStem.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0003/structures/BrainStem.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0009/structures/BrainStem.nrrd",
-            "./data/PDDCA-1.4.1_part1/0522c0013/structures/BrainStem.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0001/structures/BrainStem.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0002/structures/BrainStem.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0003/structures/BrainStem.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0009/structures/BrainStem.nrrd",
+            "./benchmark/data/PDDCA-1.4.1_part1/0522c0013/structures/BrainStem.nrrd",
         ]
         each_image_trans = Compose([Resize(74,74,74)])
 

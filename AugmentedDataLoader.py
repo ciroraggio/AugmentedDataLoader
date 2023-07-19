@@ -2,7 +2,7 @@ import torch
 import os
 import random
 from monai.data import ImageDataset
-import torchvision.utils as vutils
+from AugmentedDataLoaderUtils import save_subplot, zero_one_scaling
 
 """
 Inizializza il dataset e genera i batch utilizzando il metodo 'generate_batches'. 
@@ -12,9 +12,10 @@ Dopo aver creato un'istanza di AugmentedDataLoader con i parametri necessari, ut
     - batch_size -> Dimensione del batch (K) ovvero i blocchi da restituire
     - num_patients -> Numero totale di pazienti (N)
     - subset_len -> Lunghezza del subset (J)
+    - [optional] transformation_device ->  se indicato, è il dispositivo su cui l'utente sceglie di indirizzare la trasformazione
+    - [optional] return_device -> se indicato, è il dispositivo su cui l'utente sceglie di indirizzare ogni batch restituito
     - [optional] debug_path -> se indicato, è il path dove l'utente sceglie di salvare una fetta dell'immagine, per ogni immagine dei batch restituiti 
 """
-
 
 class AugmentedDataLoader:
     def __init__(
@@ -23,6 +24,8 @@ class AugmentedDataLoader:
         augmentation_transforms: list,
         batch_size: int,
         subset_len: int,
+        transformation_device: str = "cpu",
+        return_device: str = "cpu",
         debug_path: str = None,
     ):
         self.dataset = dataset  # Dataset di tipo ImageDataset, contiene: immagini, etichette e trasformazioni sistematiche
@@ -31,6 +34,8 @@ class AugmentedDataLoader:
         self.num_patients = len(dataset.image_files)  # Numero totale di pazienti (N)
         self.subset_len = subset_len  # Lunghezza del subset (J)
         self.debug_path = debug_path  # se indicato, è il path dove l'utente sceglie di salvare una fetta dell'immagine, per ogni immagine dei batch restituiti
+        self.transformation_device = transformation_device # se indicato, è il dispositivo su cui l'utente sceglie di indirizzare la trasformazione
+        self.return_device = return_device # se indicato, è il dispositivo su cui l'utente sceglie di indirizzare ogni batch restituito
 
     def generate_batches(self):
         if self.dataset is None:
@@ -62,14 +67,23 @@ class AugmentedDataLoader:
             """
             subset_indices = shuffle_patient_indices[index : index + checked_subset_len]
             subset = torch.utils.data.Subset(self.dataset, subset_indices)
-
+            # print(f"subset len {len(subset)}")
             augmented_subset = []
             for data in subset:
                 augmented_data = []
                 for transformation in self.augmentation_transforms:
-                    augmented_data.append(transformation(data[0]))
+                    # print(f"applico la trasformazione {transformation}")
+                    if(self.transformation_device != "cpu"):
+                        print(f"device diverso da cpu trovato")
+                        torch.cuda.set_device(self.transformation_device)
 
-                augmented_subset.append(data[0])  # Aggiungo le immagini NON aumentate
+                    # print(f"Shape img: {data[0].shape} - Shape seg: {data[1].shape}")
+                    augmented_image = transformation(data[0])
+                    augmented_segmentation = transformation(data[1])
+
+                    augmented_data.append((augmented_image, augmented_segmentation))
+
+                augmented_subset.append((data[0], data[1]))  # Aggiungo le immagini NON aumentate
                 augmented_subset.extend(
                     augmented_data
                 )  # Aggiungo le immagini aumentate
@@ -78,7 +92,7 @@ class AugmentedDataLoader:
             Ulteriore shuffle delle (J*M)+J immagini, in questo modo riceverà immagini aumentate e non aumentate mixate
             """
             full_batch_indices = torch.randperm(len(augmented_subset))
-            augmented_subset = [augmented_subset[idx] for idx in full_batch_indices]
+            augmented_subset = [(augmented_subset[idx][0], augmented_subset[idx][1]) for idx in full_batch_indices]
 
             """
             Creo blocchi di dimensione K
@@ -103,18 +117,36 @@ class AugmentedDataLoader:
                 Operatore yield per mantenere lo stato della funzione tra le chiamate.
                 """
                 if self.debug_path:
+                    print("trovato debug path")
                     for i, data in enumerate(block):
-                        image = data[0]
-                        central_slice = image[image.shape[0] // 2]  # Estraggo la fetta centrale sul primo canale
-                        normalized_slice = (central_slice - central_slice.min()) / (central_slice.max() - central_slice.min())
+                        # print(f"data[0] shape {data[0].shape} - data[1] shape {data[1].shape}")
+                        # print(f"data[0]: {data[0]}\ndata[1]: {data[1]}")
+                        image = data[0] 
+                        first_channel = image[0]
+                        central_slice_idx = first_channel.shape[1] // 2  # Estraggo l'indice della fetta centrale sul primo canale
+                        
+                        # Seleziona le fette centrali per ciascuna dimensione
+                        slice_x = image[:, :, central_slice_idx]
+                        slice_y = image[:, central_slice_idx, :]
+                        slice_z = image[central_slice_idx, :, :]
+
+                        normalized_slice_x = zero_one_scaling(slice_x)
+                        normalized_slice_y = zero_one_scaling(slice_y)
+                        normalized_slice_z = zero_one_scaling(slice_z)
+
                         debug_image_path = os.path.join(self.debug_path, f"augmented_image_{image_count}.png")
-                        vutils.save_image(normalized_slice, debug_image_path)
+                        save_subplot(images=[normalized_slice_x, normalized_slice_y, normalized_slice_z], central_slice_idx=central_slice_idx, path=debug_image_path)
+                        
                         image_count += 1
 
-                        
-                block = [data.float() for data in block]  # Conversione dei tensori delle immagini a float32
-                batch = torch.stack(block)
-                yield batch
+                float_block = []        
+                for tensor_tuple in block:
+                    float_block.append([tensor_tuple[0].float(),tensor_tuple[1].float()])  # Conversione dei tensori delle immagini e segmentazioni a float32
+
+                images = torch.stack([data[0] for data in float_block])
+                segmentations = torch.stack([data[1] for data in float_block])
+                
+                yield images.to(self.return_device), segmentations.to(self.return_device)
 
             """
             Dopo aver passato tutti i (J*M)+J pazienti a blocchi di K, incremento l'indice e riparto per leggere altri J pazienti

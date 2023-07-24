@@ -1,21 +1,27 @@
 import matplotlib.pyplot as plt
+from monai.visualize import matshow3d
 import numpy as np
 
-def save_subplot(images, central_slice_idx, path):
-    fig, axs = plt.subplots(1, 3)
-    print(np.min(images[0]), np.max(images[0]))
-    axs[0].imshow(images[0][:, :, central_slice_idx], cmap='gray', vmin=0, vmax=1)
-    axs[0].axis('off')
+def save_subplot(image, path) -> None:
+    first_channel = image[0]
+    central_slice_idx = first_channel.shape[1] // 2  # Estraggo l'indice della fetta centrale sul primo canale
+                        
+    # Seleziona le fette centrali per ciascuna dimensione scalandole tra 0 ed 1
+    slice_x = image[:, :, central_slice_idx]
+    slice_y = image[:, central_slice_idx, :]
+    slice_z = image[central_slice_idx, :, :]
 
-    axs[1].imshow(images[1][:, :, central_slice_idx], cmap='gray', vmin=0, vmax=1)
-    axs[1].axis('off')
-
-    axs[2].imshow(images[2][:, :, central_slice_idx], cmap='gray', vmin=0, vmax=1)
-    axs[2].axis('off')
-
+    # Visualizzazione del volume 3D dell'immagine utilizzando matshow3d di MONAI
+    fig = plt.figure()
+    matshow3d(
+        volume=[slice_z, slice_y, slice_x],
+        fig=None,
+        title="Augmented image",
+        figsize=(10, 10),
+        # every_n=10,
+        frame_dim=-1,
+        show=False,
+        cmap="gray",
+    )
     plt.savefig(path)
-    plt.close()
-
-
-def zero_one_scaling(slice):
-    return (slice - slice.min()) / (slice.max() - slice.min())
+    return None

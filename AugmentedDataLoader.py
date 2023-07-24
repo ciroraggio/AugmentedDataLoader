@@ -2,7 +2,7 @@ import torch
 import os
 import random
 from monai.data import ImageDataset
-from AugmentedDataLoaderUtils import save_subplot, zero_one_scaling
+from AugmentedDataLoaderUtils import save_subplot
 
 """
 Inizializza il dataset e genera i batch utilizzando il metodo 'generate_batches'. 
@@ -84,9 +84,7 @@ class AugmentedDataLoader:
                     augmented_data.append((augmented_image, augmented_segmentation))
 
                 augmented_subset.append((data[0], data[1]))  # Aggiungo le immagini NON aumentate
-                augmented_subset.extend(
-                    augmented_data
-                )  # Aggiungo le immagini aumentate
+                augmented_subset.extend(augmented_data)  # Aggiungo le immagini aumentate
 
             """
             Ulteriore shuffle delle (J*M)+J immagini, in questo modo riceverà immagini aumentate e non aumentate mixate
@@ -107,7 +105,7 @@ class AugmentedDataLoader:
                 augmented_subset[i : i + self.batch_size]
                 for i in range(0, len(augmented_subset), self.batch_size)
             ]
-            
+
             image_count = 0
             for block in blocks:
                 """
@@ -117,25 +115,10 @@ class AugmentedDataLoader:
                 Operatore yield per mantenere lo stato della funzione tra le chiamate.
                 """
                 if self.debug_path:
-                    print("trovato debug path")
                     for i, data in enumerate(block):
-                        # print(f"data[0] shape {data[0].shape} - data[1] shape {data[1].shape}")
-                        # print(f"data[0]: {data[0]}\ndata[1]: {data[1]}")
                         image = data[0] 
-                        first_channel = image[0]
-                        central_slice_idx = first_channel.shape[1] // 2  # Estraggo l'indice della fetta centrale sul primo canale
-                        
-                        # Seleziona le fette centrali per ciascuna dimensione
-                        slice_x = image[:, :, central_slice_idx]
-                        slice_y = image[:, central_slice_idx, :]
-                        slice_z = image[central_slice_idx, :, :]
-
-                        normalized_slice_x = zero_one_scaling(slice_x)
-                        normalized_slice_y = zero_one_scaling(slice_y)
-                        normalized_slice_z = zero_one_scaling(slice_z)
-
                         debug_image_path = os.path.join(self.debug_path, f"augmented_image_{image_count}.png")
-                        save_subplot(images=[normalized_slice_x, normalized_slice_y, normalized_slice_z], central_slice_idx=central_slice_idx, path=debug_image_path)
+                        save_subplot(image, path=debug_image_path)
                         
                         image_count += 1
 

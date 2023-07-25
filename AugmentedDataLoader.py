@@ -3,7 +3,6 @@ import os
 import random
 from monai.data import ImageDataset
 from AugmentedDataLoaderUtils import save_subplot
-
 """
 Inizializza il dataset e genera i batch utilizzando il metodo 'generate_batches'. 
 Dopo aver creato un'istanza di AugmentedDataLoader con i parametri necessari, utilizzare il metodo generate_batches() per iterare sui batch di dati.
@@ -36,8 +35,9 @@ class AugmentedDataLoader:
         self.debug_path = debug_path  # se indicato, è il path dove l'utente sceglie di salvare una fetta dell'immagine, per ogni immagine dei batch restituiti
         self.transformation_device = transformation_device # se indicato, è il dispositivo su cui l'utente sceglie di indirizzare la trasformazione
         self.return_device = return_device # se indicato, è il dispositivo su cui l'utente sceglie di indirizzare ogni batch restituito
+        self.has_segmentations = bool(dataset.seg_files) # per non trasformare le etichette
 
-    def generate_batches(self):
+    def __iter__(self):
         if self.dataset is None:
             raise Exception("Dataset is None")
 
@@ -67,20 +67,18 @@ class AugmentedDataLoader:
             """
             subset_indices = shuffle_patient_indices[index : index + checked_subset_len]
             subset = torch.utils.data.Subset(self.dataset, subset_indices)
-            # print(f"subset len {len(subset)}")
+            
             augmented_subset = []
             for data in subset:
                 augmented_data = []
                 for transformation in self.augmentation_transforms:
-                    # print(f"applico la trasformazione {transformation}")
                     if(self.transformation_device != "cpu"):
-                        print(f"device diverso da cpu trovato")
                         torch.cuda.set_device(self.transformation_device)
 
-                    # print(f"Shape img: {data[0].shape} - Shape seg: {data[1].shape}")
                     augmented_image = transformation(data[0])
-                    augmented_segmentation = transformation(data[1])
-
+                    # trasformo solo se non è etichetta
+                    augmented_segmentation = transformation(data[1]) if self.has_segmentations else data[1]
+                    
                     augmented_data.append((augmented_image, augmented_segmentation))
 
                 augmented_subset.append((data[0], data[1]))  # Aggiungo le immagini NON aumentate
@@ -106,6 +104,9 @@ class AugmentedDataLoader:
                 for i in range(0, len(augmented_subset), self.batch_size)
             ]
 
+            # for img, seg in augmented_subset:
+            #     save_subplot(img, './')
+            
             image_count = 0
             for block in blocks:
                 """
@@ -118,18 +119,20 @@ class AugmentedDataLoader:
                     for i, data in enumerate(block):
                         image = data[0] 
                         debug_image_path = os.path.join(self.debug_path, f"augmented_image_{image_count}.png")
-                        save_subplot(image, path=debug_image_path)
+                        save_subplot(image=image, path=debug_image_path, image_count=image_count)
                         
                         image_count += 1
 
                 float_block = []        
                 for tensor_tuple in block:
-                    float_block.append([tensor_tuple[0].float(),tensor_tuple[1].float()])  # Conversione dei tensori delle immagini e segmentazioni a float32
+                    float_img = tensor_tuple[0].float()
+                    float_seg = tensor_tuple[1].float() if self.has_segmentations else tensor_tuple[1]
+                    float_block.append([float_img,float_seg])  # Conversione dei tensori delle immagini e segmentazioni a float32
 
-                images = torch.stack([data[0] for data in float_block])
-                segmentations = torch.stack([data[1] for data in float_block])
+                images = torch.stack([data[0] for data in float_block]).to(self.return_device)
+                segmentations_or_labels = torch.stack([data[1] for data in float_block]).to(self.return_device) if self.has_segmentations else [data[1] for data in float_block]
                 
-                yield images.to(self.return_device), segmentations.to(self.return_device)
+                yield images, segmentations_or_labels
 
             """
             Dopo aver passato tutti i (J*M)+J pazienti a blocchi di K, incremento l'indice e riparto per leggere altri J pazienti

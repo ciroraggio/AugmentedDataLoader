@@ -62,7 +62,7 @@ def cpu_bench_w_debug_10_transf(dataset, augmentation_transforms, batch_size, su
 
 
 if __name__ == '__main__':
-    print("++++++++++++++++ AugmentedDataLoader CPU Benchmark Started ++++++++++++++++")
+    print("++++++++++++++++ AugmentedDataLoader GPU Benchmark Started ++++++++++++++++")
     print("++++++++++++++++++++++++++++++ Please wait... +++++++++++++++++++++++++++++")
     # ImageDataset params
     images_to_transform = [

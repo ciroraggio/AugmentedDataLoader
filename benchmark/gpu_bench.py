@@ -18,21 +18,21 @@ bench_no_debug_10_trans_prof = cProfile.Profile()
 # no debug
 def cpu_bench_no_debug_0_transf(dataset, augmentation_transforms, batch_size, subset_len):
     bench_no_debug_0_trans_prof.enable()
-    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len)
+    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len, transformation_device=0, return_device=0)
     for batch_data in data_loader:
         inputs, labels = (batch_data[0], None) if len(batch_data) == 1 else batch_data
     bench_no_debug_0_trans_prof.disable()
 
 def cpu_bench_no_debug_5_transf(dataset, augmentation_transforms, batch_size, subset_len):
     bench_no_debug_5_trans_prof.enable()
-    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len)
+    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len, transformation_device=0, return_device=0)
     for batch_data in data_loader:
         inputs, labels = (batch_data[0], None) if len(batch_data) == 1 else batch_data
     bench_no_debug_5_trans_prof.disable()
 
 def cpu_bench_no_debug_10_transf(dataset, augmentation_transforms, batch_size, subset_len):
     bench_no_debug_10_trans_prof.enable()
-    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len)
+    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len, transformation_device=0, return_device=0)
     for batch_data in data_loader:
         inputs, labels = (batch_data[0], None) if len(batch_data) == 1 else batch_data
     bench_no_debug_10_trans_prof.disable()
@@ -40,21 +40,21 @@ def cpu_bench_no_debug_10_transf(dataset, augmentation_transforms, batch_size, s
 # with debug
 def cpu_bench_w_debug_0_transf(dataset, augmentation_transforms, batch_size, subset_len):
     bench_w_debug_0_trans_prof.enable()
-    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len)
+    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len, transformation_device=0, return_device=0)
     for batch_data in data_loader:
         inputs, labels = (batch_data[0], None) if len(batch_data) == 1 else batch_data
     bench_w_debug_0_trans_prof.disable()
 
 def cpu_bench_w_debug_5_transf(dataset, augmentation_transforms, batch_size, subset_len):
     bench_w_debug_5_trans_prof.enable()
-    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len)
+    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len, transformation_device=0, return_device=0)
     for batch_data in data_loader:
         inputs, labels = (batch_data[0], None) if len(batch_data) == 1 else batch_data
     bench_w_debug_5_trans_prof.disable()
 
 def cpu_bench_w_debug_10_transf(dataset, augmentation_transforms, batch_size, subset_len):
     bench_w_debug_10_trans_prof.enable()
-    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len)
+    data_loader = AugmentedDataLoader(dataset, augmentation_transforms, batch_size, subset_len, transformation_device=0, return_device=0)
     for batch_data in data_loader:
         inputs, labels = (batch_data[0], None) if len(batch_data) == 1 else batch_data
     bench_w_debug_10_trans_prof.disable()

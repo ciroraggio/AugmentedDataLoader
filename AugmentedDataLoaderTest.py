@@ -1,5 +1,4 @@
 import unittest
-import random
 from monai.transforms import Rotate, Compose, Resize
 from AugmentedDataLoader import AugmentedDataLoader
 from monai.data import ImageDataset

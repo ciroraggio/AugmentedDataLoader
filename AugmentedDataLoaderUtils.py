@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from monai.visualize import matshow3d
-import numpy as np
 
 def save_subplot(image, path, image_count) -> None:
     first_channel = image[0]

@@ -36,18 +36,19 @@ class AugmentedDataLoader:
         self.transformation_device = transformation_device # se indicato, è il dispositivo su cui l'utente sceglie di indirizzare la trasformazione
         self.return_device = return_device # se indicato, è il dispositivo su cui l'utente sceglie di indirizzare ogni batch restituito
         self.has_segmentations = bool(dataset.seg_files) # per non trasformare le etichette
-
-    def __iter__(self):
+        
         if self.dataset is None:
             raise Exception("Dataset is None")
-
-        if (
-            self.dataset.image_files
-            and self.dataset.seg_files
-            and len(self.dataset.image_files) != len(self.dataset.seg_files)
-        ):
-            raise Exception("The length of the images and segmentations don't match")
-
+        
+        if self.batch_size is None or self.batch_size == 0:
+            raise Exception("Invalid batch size")
+        
+        if self.subset_len is None or self.batch_size == 0:
+            raise Exception("Invalid subset len")
+    
+        
+        
+    def __iter__(self):
         # Creo una lista contenente tutti gli indici dei pazienti ed applico lo shuffle per non operare sui pazienti nello stesso ordine di arrivo
         shuffle_patient_indices = list(range(self.num_patients))
         random.shuffle(shuffle_patient_indices)
@@ -55,7 +56,7 @@ class AugmentedDataLoader:
         index = 0
         while index < self.num_patients:
             """
-            ***checked_subset_len*** determina la lunghezza del subset che sarà estratto,
+            checked_subset_len determina la lunghezza del subset che sarà estratto,
             se il valore specificato dall'utente per subset_len è maggiore del numero di pazienti rimanenti,
             allora subset_len sarà pari al numero di pazienti rimanenti, in modo da evitare di superare la lunghezza della lista dei pazienti
             """
@@ -103,9 +104,6 @@ class AugmentedDataLoader:
                 augmented_subset[i : i + self.batch_size]
                 for i in range(0, len(augmented_subset), self.batch_size)
             ]
-
-            # for img, seg in augmented_subset:
-            #     save_subplot(img, './')
             
             image_count = 0
             for block in blocks:
@@ -116,7 +114,7 @@ class AugmentedDataLoader:
                 Operatore yield per mantenere lo stato della funzione tra le chiamate.
                 """
                 if self.debug_path:
-                    for i, data in enumerate(block):
+                    for _, data in enumerate(block):
                         image = data[0] 
                         debug_image_path = os.path.join(self.debug_path, f"augmented_image_{image_count}.png")
                         save_subplot(image=image, path=debug_image_path, image_count=image_count)

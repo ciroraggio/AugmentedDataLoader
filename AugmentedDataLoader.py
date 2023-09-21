@@ -4,12 +4,12 @@ import random
 from monai.data import ImageDataset
 from AugmentedDataLoaderUtils import save_subplot
 """
-Inizializza il dataset e genera i batch utilizzando il metodo 'generate_batches'. 
+Inizializza il dataset e genera i batch ad ogni iterazione. 
 Dopo aver creato un'istanza di AugmentedDataLoader con i parametri necessari, utilizzare il metodo generate_batches() per iterare sui batch di dati.
     - dataset -> Dataset di tipo ImageDataset, contiene: immagini, etichette e trasformazioni sistematiche
     - augmentation_transforms -> Lista di (M) trasformazioni MONAI per l'augmentation
     - batch_size -> Dimensione del batch (K) ovvero i blocchi da restituire
-    - num_patients -> Numero totale di pazienti (N)
+    - num_imgs -> Numero totale di immagini (N)
     - subset_len -> Lunghezza del subset (J)
     - [optional] transformation_device ->  se indicato, è il dispositivo su cui l'utente sceglie di indirizzare la trasformazione
     - [optional] return_device -> se indicato, è il dispositivo su cui l'utente sceglie di indirizzare ogni batch restituito
@@ -30,7 +30,7 @@ class AugmentedDataLoader:
         self.dataset = dataset  # Dataset di tipo ImageDataset, contiene: immagini, segmentazioni o etichette, trasformazioni sistematiche
         self.augmentation_transforms = augmentation_transforms  # Lista di (M) trasformazioni MONAI per l'augmentation
         self.batch_size = batch_size  # Dimensione del batch (K)
-        self.num_patients = len(dataset.image_files)  # Numero totale di pazienti (N)
+        self.num_imgs = len(dataset.image_files)  # Numero totale di immagini (N)
         self.subset_len = subset_len  # Lunghezza del subset (J)
         self.debug_path = debug_path  # se indicato, è il path dove l'utente sceglie di salvare una fetta dell'immagine, per ogni immagine dei batch restituiti
         self.transformation_device = transformation_device # se indicato, è il dispositivo su cui l'utente sceglie di indirizzare la trasformazione
@@ -49,24 +49,24 @@ class AugmentedDataLoader:
         
         
     def __iter__(self):
-        # Creo una lista contenente tutti gli indici dei pazienti ed applico lo shuffle per non operare sui pazienti nello stesso ordine di arrivo
-        shuffle_patient_indices = list(range(self.num_patients))
-        random.shuffle(shuffle_patient_indices)
+        # Creo una lista contenente tutti gli indici delle immagini ed applico lo shuffle per non operare sulle immagini nello stesso ordine di arrivo
+        shuffle_imgs_indices = list(range(self.num_imgs))
+        random.shuffle(shuffle_imgs_indices)
 
         index = 0
-        while index < self.num_patients:
+        while index < self.num_imgs:
             """
             checked_subset_len determina la lunghezza del subset che sarà estratto,
-            se il valore specificato dall'utente per subset_len è maggiore del numero di pazienti rimanenti,
-            allora subset_len sarà pari al numero di pazienti rimanenti, in modo da evitare di superare la lunghezza della lista dei pazienti
+            se il valore specificato dall'utente per subset_len è maggiore del numero di immagini rimanenti,
+            allora subset_len sarà pari al numero di immagini rimanenti, in modo da evitare di superare la lunghezza della lista delle immagini
             """
-            remaining_patients = self.num_patients - index
-            checked_subset_len = min(self.subset_len, remaining_patients)
+            remaining_imgs = self.num_imgs - index
+            checked_subset_len = min(self.subset_len, remaining_imgs)
 
             """
-            Viene creato un subset di pazienti (che vengono scelti dalla lista di indici precedentemente mischiati) avente lunghezza J
+            Viene creato un subset di immagini (che vengono scelti dalla lista di indici precedentemente mischiati) avente lunghezza J
             """
-            subset_indices = shuffle_patient_indices[index : index + checked_subset_len]
+            subset_indices = shuffle_imgs_indices[index : index + checked_subset_len]
             subset = torch.utils.data.Subset(self.dataset, subset_indices)
             
             augmented_subset = []
@@ -133,6 +133,6 @@ class AugmentedDataLoader:
                 yield images, segmentations_or_labels
 
             """
-            Dopo aver passato tutti i (J*M)+J pazienti a blocchi di K, incremento l'indice e riparto per leggere altri J pazienti
+            Dopo aver passato tutte le (J*M)+J immagini a blocchi di K, incremento l'indice e riparto per leggere altre J immagini
             """
             index += checked_subset_len

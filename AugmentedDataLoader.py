@@ -27,7 +27,7 @@ class AugmentedDataLoader:
         return_device: str = "cpu",
         debug_path: str = None,
     ):
-        self.dataset = dataset  # Dataset di tipo ImageDataset, contiene: immagini, etichette e trasformazioni sistematiche
+        self.dataset = dataset  # Dataset di tipo ImageDataset, contiene: immagini, segmentazioni o etichette, trasformazioni sistematiche
         self.augmentation_transforms = augmentation_transforms  # Lista di (M) trasformazioni MONAI per l'augmentation
         self.batch_size = batch_size  # Dimensione del batch (K)
         self.num_patients = len(dataset.image_files)  # Numero totale di pazienti (N)

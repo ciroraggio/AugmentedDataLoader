@@ -4,7 +4,7 @@ import random
 from monai.data import ImageDataset
 from AugmentedDataLoaderUtils import save_subplot
 """
-Inizializza il dataset e genera i batch utilizzando il metodo 'generate_batches'. 
+Inizializza il dataset e genera i batch ad ogni iterazione. 
 Dopo aver creato un'istanza di AugmentedDataLoader con i parametri necessari, utilizzare il metodo generate_batches() per iterare sui batch di dati.
     - dataset -> Dataset di tipo ImageDataset, contiene: immagini, etichette e trasformazioni sistematiche
     - augmentation_transforms -> Lista di (M) trasformazioni MONAI per l'augmentation

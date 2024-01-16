@@ -1,6 +1,6 @@
 import unittest
 from monai.transforms import Rotate, Compose, Resize
-from AugmentedDataLoader import AugmentedDataLoader
+from loaders.AugmentedDataLoader import AugmentedDataLoader
 from monai.data import ImageDataset
 import torch
 class AugmentedDataLoaderTest(unittest.TestCase):

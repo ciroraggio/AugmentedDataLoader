@@ -8,7 +8,7 @@ Medical image augmentation tool that can be integrated with Pytorch & MONAI, by 
     - [AugmentedDataLoader](#augmenteddataloader-1)
     - [AugmentedImageToImageDataLoader](#augmentedimagetoimagedataloader)
 - [Workflow](#workflow)
-  - [Changelog](#changelog)
+- [Changelog](#changelog)
   
 ## Description
 A medical image augmentation algorithm developed to improve flexibility and customization in the data augmentation process for medical image processing applications. It can be integrated and used within the MONAI framework.
@@ -144,7 +144,7 @@ for batches in augmented_data_loader:
 ```
 # Workflow![AugmentedDataLoaderWorkflow](/assets/workflow.png)
 
-## Changelog
+# Changelog
 - v2.0:
     - Added a new dataset (ImageToImageDataset) and a new dataloader (AugmentedImageToImageDataLoader) to support cases in which the user wants to augment two images associated with a simultaneous mask/segmentation
     - Fixed bugs on returning batches in AugmentedDataLoader

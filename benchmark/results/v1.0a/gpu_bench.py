@@ -1,6 +1,6 @@
 from monai.transforms import Rotate, Compose, Resize
 from monai.data import ImageDataset
-from AugmentedDataLoader import AugmentedDataLoader
+from loaders.AugmentedDataLoader import AugmentedDataLoader
 import timeit
 from memory_profiler import profile
 import monai.transforms as monai_transf

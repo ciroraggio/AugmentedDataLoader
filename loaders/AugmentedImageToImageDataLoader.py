@@ -33,7 +33,10 @@ class AugmentedImageToImageDataLoader:
         self.transformation_device = transformation_device # if indicated, it is the device on which the user chooses to direct the transformation
         self.return_on_device = return_on_device # if indicated, this is the device to which the user chooses to direct each returned batch
         self.has_segmentations = bool(dataset.seg_files) # so as not to transform the labels
-        
+    
+    def __len__(self) -> int:
+        return len(self.dataset.first_type_image_files)
+    
     def __iter__(self) -> List[tuple[torch.Tensor, torch.Tensor, Union[torch.Tensor, None]]]:
         # Create a list containing all the indexes of the images and apply the shuffle so as not to operate on the images in the same order of arrival
         shuffle_imgs_indices = list(range(self.num_imgs))

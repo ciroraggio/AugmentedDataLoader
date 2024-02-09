@@ -52,7 +52,8 @@ class AugmentedDataLoader:
         if self.subset_len is None or self.batch_size == 0:
             raise Exception("Invalid subset len")
     
-        
+    def __len__(self) -> int:
+        return self.num_imgs    
         
     def __iter__(self):
         # Create a list containing all the indexes of the images and apply the shuffle so as not to operate on the images in the same order of arrival

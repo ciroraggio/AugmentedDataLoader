@@ -53,8 +53,8 @@ class ImageToImageDataset(Dataset, Randomizable):
         self.set_random_state(seed=get_seed())
         self._seed = 0  # transform synchronization seed
 
-    def __len__(self) -> tuple[int, int]:
-        return tuple(len(self.first_type_image_files), len(self.second_type_image_files))
+    def __len__(self) -> int:
+        return len(self.first_type_image_files)
 
     def randomize(self, data: Any | None = None) -> None:
         self._seed = self.R.randint(MAX_SEED, dtype="uint32")

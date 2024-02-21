@@ -62,37 +62,40 @@ class ImageToImageDataset(Dataset, Randomizable):
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
         self.randomize()
         seg, label = None, None
+        try:
+            # load data
+            print(f"Loading: {self.first_type_image_files[index]}, {self.second_type_image_files[index]}")
+            first_img = self.loader(self.first_type_image_files[index])
+            second_img = self.loader(self.second_type_image_files[index])
+            if self.seg_files is not None:
+                seg = self.loader(self.seg_files[index])
 
-        # load data
-        first_img = self.loader(self.first_type_image_files[index])
-        second_img = self.loader(self.second_type_image_files[index])
-        if self.seg_files is not None:
-            seg = self.loader(self.seg_files[index])
-
-        # apply the transforms
-        if self.first_type_image_transforms is not None:
-            first_img = apply_transform(self.first_type_image_transforms, first_img, map_items=False)
+            # apply the transforms
+            if self.first_type_image_transforms is not None:
+                first_img = apply_transform(self.first_type_image_transforms, first_img, map_items=False)
                 
-        if self.second_type_image_transforms is not None:
-            second_img = apply_transform(self.second_type_image_transforms, second_img, map_items=False)
+            if self.second_type_image_transforms is not None:
+                second_img = apply_transform(self.second_type_image_transforms, second_img, map_items=False)
 
-        if self.seg_files is not None and self.seg_transform is not None:
-            seg = apply_transform(self.seg_transform, seg, map_items=False)
+            if self.seg_files is not None and self.seg_transform is not None:
+                seg = apply_transform(self.seg_transform, seg, map_items=False)
 
-        if self.labels is not None:
-            label = self.labels[index]
-            if self.label_transform is not None:
-                label = apply_transform(self.label_transform, label, map_items=False)  # type: ignore
+            if self.labels is not None:
+                label = self.labels[index]
+                if self.label_transform is not None:
+                    label = apply_transform(self.label_transform, label, map_items=False)  # type: ignore
 
+            data = [first_img, second_img]
+            if seg is not None:
+                data.append(seg)
+            if label is not None:
+                data.append(label)
+            if len(data) == 1:
+                return data[0]
 
-        data = [first_img, second_img]
-        if seg is not None:
-            data.append(seg)
-        if label is not None:
-            data.append(label)
-        if len(data) == 1:
-            return data[0]
-        
-        # use tuple instead of list as the default collate_fn callback of MONAI DataLoader flattens nested lists
-        return tuple(data)
+            # use tuple instead of list as the default collate_fn callback of MONAI DataLoader flattens nested lists
+            return tuple(data)
 
+        except EOFError as e:
+            print(f"EOFError: {e}. Skipping to the next image.")
+            return self.__getitem__((index + 1) % len(self))

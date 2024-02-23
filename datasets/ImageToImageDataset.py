@@ -32,6 +32,7 @@ class ImageToImageDataset(Dataset, Randomizable):
         label_transform: Callable | None = None,
         dtype: DtypeLike = np.float32,
         reader: ImageReader | str | None = None,
+        device: str = "cpu",
         *args,
         **kwargs,
     ) -> None:
@@ -50,6 +51,7 @@ class ImageToImageDataset(Dataset, Randomizable):
         self.seg_transform = seg_transform
         self.label_transform = label_transform
         self.loader = LoadImage(reader, True, dtype, *args, **kwargs)
+        self.device = device
         self.set_random_state(seed=get_seed())
         self._seed = 0  # transform synchronization seed
 
@@ -64,11 +66,10 @@ class ImageToImageDataset(Dataset, Randomizable):
         seg, label = None, None
         try:
             # load data
-            print(f"Loading: {self.first_type_image_files[index]}, {self.second_type_image_files[index]}")
-            first_img = self.loader(self.first_type_image_files[index])
-            second_img = self.loader(self.second_type_image_files[index])
+            first_img = self.loader(self.first_type_image_files[index]).to(self.device)
+            second_img = self.loader(self.second_type_image_files[index]).to(self.device)
             if self.seg_files is not None:
-                seg = self.loader(self.seg_files[index])
+                seg = self.loader(self.seg_files[index]).to(self.device)
 
             # apply the transforms
             if self.first_type_image_transforms is not None:

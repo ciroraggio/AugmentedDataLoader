@@ -49,20 +49,26 @@ from AugmentedDataLoader import AugmentedDataLoader
 # ImageDataset params
 images_to_transform = [...]
 seg_to_transform = [...]
+
 each_image_trans = Compose([
-                            Resize([74,74,1])
-                            ])
+    # ...transformations to apply to all images here...
+    # Example
+    # EnsureChannelFirst(channel_dim="no_channel")
+    # Resize(spatial_size=(256, 256, 256), mode='trilinear')
+    # ...
+])
 
 # AugmentedDataLoader params
 augmentation_transforms = [
     Rotate(angle=[0.4, 0.4,0.4]), # 0.4 rad
     Flip(spatial_axis=1),
+    RandRotate(range_x=[-0.5, 0.5], range_z=[-0.5, 0.5], range_y=[-0.5, 0.5], prob=1, keep_size=True)
 ]
 subset_size = 2
 batch_size = 2
 debug_path='./debug_path_example'
 transformation_device=0
-return_device=1
+return_on_device=1
 
 dataset = ImageDataset(image_files=images_to_transform, seg_files=seg_to_transform, transform=each_image_trans, seg_transform=each_image_trans)
 
@@ -71,6 +77,7 @@ augmented_data_loader = AugmentedDataLoader(dataset=dataset, # Plain ImageDatase
                                             batch_size=batch_size, 
                                             subset_len=subset_size, 
                                             transformation_device=transformation_device, 
+                                            return_on_device=return_on_device,
                                             debug_path) # use debug 
 
 for batches in augmented_data_loader:
@@ -95,9 +102,9 @@ from monai.transforms import Flip, Compose, Resize
 from loaders.AugmentedImageToImageDataLoader import AugmentedImageToImageDataLoader
 from datasets.ImageToImageDataset import ImageToImageDataset
 
-first_type_image_path = "..."
-second_type_image_path = "..."
-seg_path = "..."
+first_type_image_path = ".../data/first_type_img_dir/"
+second_type_image_path = ".../data/second_type_img_dir/"
+seg_path = ".../data/mask_dir/"
 
 # ImageDataset params
 first_type_images_to_transform = [f"{first_type_image_path}/{img}" for img in os.listdir(first_type_image_path)]
@@ -106,17 +113,22 @@ seg_to_transform = [f"{seg_path}/{mask}" for mask in os.listdir(seg_path)]
 
 each_image_trans = Compose([
     # ...transformations to apply to all images here...
+    # Example
+    # EnsureChannelFirst(channel_dim="no_channel")
+    # Resize(spatial_size=(256, 256, 256), mode='trilinear')
+    # ...
 ])
 
 # AugmentedDataLoader params
 augmentation_transforms = [
     Flip(spatial_axis=1),
+    RandRotate(range_x=[-0.5, 0.5], range_z=[-0.5, 0.5], range_y=[-0.5, 0.5], prob=1, keep_size=True)
 ]
 
 subset_size = 2
 batch_size = 2
 transformation_device="cuda:2"
-return_device="cuda:2"
+return_on_device="cuda:2"
 
 dataset = ImageToImageDataset(first_type_image_files=first_type_images_to_transform,
                               second_type_image_files=second_type_images_to_transform,
@@ -133,7 +145,7 @@ augmented_data_loader = AugmentedImageToImageDataLoader(
                                             batch_size=batch_size, 
                                             subset_len=subset_size, 
                                             transformation_device=transformation_device, 
-                                            return_on_device=return_device
+                                            return_on_device=return_on_device
                                             )
 for batches in augmented_data_loader:
     for batch in batches:
@@ -145,6 +157,10 @@ for batches in augmented_data_loader:
 # Workflow![AugmentedDataLoaderWorkflow](/assets/workflow.png)
 
 # Changelog
+- v2.1:
+    - Added compatibility with random MONAI transformations for both loaders dataloaders (AugmentedDataLoader and AugmentedImageToImageDataLoader) 
+    - Uniformed the parameters of the AugmentedDataLoader class with those of the ImageToImageAugmentedDataLoader class
+    
 - v2.0:
     - Added a new dataset (ImageToImageDataset) and a new dataloader (AugmentedImageToImageDataLoader) to support cases in which the user wants to augment two images associated with a simultaneous mask/segmentation
     - Fixed bugs on returning batches in AugmentedDataLoader

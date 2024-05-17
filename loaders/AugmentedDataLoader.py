@@ -14,7 +14,6 @@ from utils.AugmentedDataLoaderUtils import save_subplot
     -[optional] return_device -> if indicated, it is the device to which the user chooses to direct each returned batch
     -[optional] debug_path -> if indicated, it is the path where the user chooses to save a slice of the image, for each image of the returned batches
 """
-
 class AugmentedDataLoader:
     """
     Returns for each batch (example with batch_size = 2):
@@ -30,7 +29,7 @@ class AugmentedDataLoader:
         batch_size: int,
         subset_len: int,
         transformation_device: str = "cpu",
-        return_device: str = "cpu",
+        return_on_device: str = "cpu",
         debug_path: str = None,
     ):
         self.dataset = dataset  # ImageDataset type dataset, contains: images, segmentations or labels, systematic transformations
@@ -40,7 +39,7 @@ class AugmentedDataLoader:
         self.subset_len = subset_len  # Subset length (J)
         self.debug_path = debug_path  # if indicated, it is the path where the user chooses to save a slice of the image, for each image of the returned batches
         self.transformation_device = transformation_device # if indicated, it is the device on which the user chooses to direct the transformation
-        self.return_device = return_device # if indicated, this is the device to which the user chooses to direct each returned batch
+        self.return_on_device = return_on_device # if indicated, this is the device to which the user chooses to direct each returned batch
         self.has_segmentations = bool(dataset.seg_files) # so as not to transform the labels
         
         if self.dataset is None:
@@ -80,11 +79,19 @@ class AugmentedDataLoader:
             for data in subset:
                 augmented_data = []
                 for transformation in self.augmentation_transforms:
-                    augmented_image = transformation(data[0].to(self.transformation_device))
-                    
-                    # Only transform if it's not a label
-                    augmented_segmentation = transformation(data[1].to(self.transformation_device)) if self.has_segmentations else data[1]
-                    
+                    # Only stack and transform together if data[1] it's not a label
+                    if self.has_segmentations:
+                        # the torch.cat is used to prevent mismatching between the images in case of random transformations
+                        stacked_augmented_images = transformation(
+                                                        torch.cat([
+                                                            data[0].to(self.transformation_device), 
+                                                            data[1].to(self.transformation_device), 
+                                                        ], dim=0)
+                                                    ) 
+                        augmented_image, augmented_segmentation = torch.chunk(stacked_augmented_images, 2, dim=0)
+                    else:
+                        augmented_image, augmented_segmentation = transformation(data[0]), data[1]
+
                     augmented_data.append((augmented_image, augmented_segmentation))
 
                 augmented_subset.append((data[0], data[1]))  # Add the NOT augmented images
@@ -138,4 +145,3 @@ class AugmentedDataLoader:
             After having passed all the (J*M)+J batch images of K, I increase the index and start again to read other J images
             """
             index += checked_subset_len
-            

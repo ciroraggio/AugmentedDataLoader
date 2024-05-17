@@ -62,12 +62,22 @@ class AugmentedImageToImageDataLoader:
             for data in subset:
                 augmented_data = []
                 for transformation in self.augmentation_transforms:
-                    augmented_first_image = transformation(data[0].to(self.transformation_device))
-                    augmented_second_image = transformation(data[1].to(self.transformation_device))
-                    
-                    # Only transform if it's not a label
-                    augmented_segmentation = transformation(data[2].to(self.transformation_device)) if self.has_segmentations else data[2]
-                    
+                    # Only stack and transform together if data[2] it's not a label
+                    if self.has_segmentations:
+                        # the torch.cat is used to prevent mismatching between the images in case of random transformations
+                        stacked_augmented_images = transformation(
+                                                        torch.cat([
+                                                            data[0].to(self.transformation_device), 
+                                                            data[1].to(self.transformation_device), 
+                                                            data[2].to(self.transformation_device)
+                                                        ], dim=0)
+                                                    ) 
+                        augmented_first_image, augmented_second_image, augmented_segmentation = torch.chunk(stacked_augmented_images, 3, dim=0)
+                    else:
+                        stacked_augmented_images = transformation(torch.cat(data[0].to(self.transformation_device), data[1].to(self.transformation_device)))
+                        augmented_first_image, augmented_second_image = torch.chunk(stacked_augmented_images, 2, dim=0) 
+                        augmented_segmentation = data[2]
+
                     augmented_data.append((augmented_first_image, augmented_second_image, augmented_segmentation))
 
                 augmented_subset.append((data[0], data[1], data[2]))  # Add the NOT augmented images
@@ -120,4 +130,3 @@ class AugmentedImageToImageDataLoader:
                 
             # After having passed all the (J*M)+J batch images of K, increase the index and start again to read other J images    
             index += checked_subset_len
-            

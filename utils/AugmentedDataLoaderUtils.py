@@ -24,3 +24,12 @@ def save_subplot(image, path, image_count) -> None:
     )
     plt.savefig(path)
     return None
+
+
+def measure_gpu_memory(message=""):
+    allocated_memory = torch.cuda.memory_allocated()
+    reserved_memory = torch.cuda.memory_reserved()
+    if message:
+        print(f"{message}:")
+    print(f"Allocated Memory: {allocated_memory / 1024**2:.2f} MB")
+    print(f"Reserved Memory: {reserved_memory / 1024**2:.2f} MB")

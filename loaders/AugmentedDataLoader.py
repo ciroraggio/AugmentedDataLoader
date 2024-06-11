@@ -104,7 +104,7 @@ class AugmentedDataLoader:
                     augmented_image_super_batch.append(augmented_image)
                     augmented_segmentation_super_batch.append(augmented_segmentation)
                     augmented_image_super_batch.append(data[0].float().to(self.return_on_device))
-                    augmented_segmentation_super_batch.append(data[1].float().to(self.return_on_device) if self.has_segmentations else torch.tensor(data[1]).float())
+                    augmented_segmentation_super_batch.append(data[1].float().to(self.return_on_device) if self.has_segmentations else torch.tensor(data[1]).float().to(self.return_on_device))
 
             yield from self._generate_batches(augmented_image_super_batch, augmented_segmentation_super_batch)
             del augmented_image_super_batch, augmented_segmentation_super_batch
@@ -135,7 +135,7 @@ class AugmentedDataLoader:
             original_batch_img = [data[0].float().to(self.return_on_device) for data in subset]
             original_batch_seg = ([data[1].float().to(self.return_on_device) for data in subset]
                                   if self.has_segmentations 
-                                  else [torch.tensor(data[1]).float() for data in subset])
+                                  else [torch.tensor(data[1]).float().to(self.return_on_device) for data in subset])
             
             yield from self._generate_batches(original_batch_img, original_batch_seg)
             del original_batch_img, original_batch_seg

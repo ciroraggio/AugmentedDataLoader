@@ -2,8 +2,8 @@ import torch
 import os
 import random
 from typing import List, Union
-from AugmentedDataLoader.datasets.ImageToImageDataset import ImageToImageDataset
-from AugmentedDataLoader.utils.AugmentedDataLoaderUtils import save_subplot_i2i
+from datasets.ImageToImageDataset import ImageToImageDataset
+from utils.AugmentedDataLoaderUtils import save_subplot_i2i
 
 SHUFFLE_MODE_LIST=["full", "pseudo"]
 
@@ -13,8 +13,8 @@ class AugmentedImageToImageDataLoader:
                  augmentation_transforms: list, 
                  batch_size: int, 
                  subset_len: int, 
-                 transformation_device: str = "cpu", 
-                 return_on_device: str = "cpu", 
+                 transformation_device: Union[str, torch.device] = "cpu", 
+                 return_on_device: Union[str, torch.device] = "cpu", 
                  debug_path: str = None,
                  shuffle_mode: str = "full"):
 
@@ -131,7 +131,7 @@ class AugmentedImageToImageDataLoader:
                     
                     augmented_image1_super_batch.append(data[0].float().to(self.return_on_device))
                     augmented_image2_super_batch.append(data[1].float().to(self.return_on_device))
-                    augmented_segmentation_super_batch.append(data[2].float().to(self.return_on_device) if self.has_segmentations else torch.tensor(data[2]).float())
+                    augmented_segmentation_super_batch.append(data[2].float().to(self.return_on_device) if self.has_segmentations else torch.tensor(data[2]).float().to(self.return_on_device))
             
             yield from self._generate_batches(augmented_image1_super_batch, augmented_image2_super_batch, augmented_segmentation_super_batch)
             del augmented_image1_super_batch, augmented_image2_super_batch, augmented_segmentation_super_batch
@@ -167,7 +167,7 @@ class AugmentedImageToImageDataLoader:
             original_batch_img2 = [data[1].float().to(self.return_on_device) for data in subset]
             original_batch_seg = ([data[2].float().to(self.return_on_device) for data in subset]
                                   if self.has_segmentations 
-                                  else [torch.tensor(data[2]).float() for data in subset])
+                                  else [torch.tensor(data[2]).float().to(self.return_on_device) for data in subset])
             
             yield from self._generate_batches(original_batch_img1, original_batch_img2, original_batch_seg)
             del original_batch_img1, original_batch_img2, original_batch_seg

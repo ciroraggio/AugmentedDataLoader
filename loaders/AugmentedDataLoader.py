@@ -1,8 +1,9 @@
 import os
 import torch
 import random
+from typing import Union
 from monai.data import ImageDataset
-from AugmentedDataLoader.utils.AugmentedDataLoaderUtils import save_subplot
+from utils.AugmentedDataLoaderUtils import save_subplot
 
 SHUFFLE_MODE_LIST = ["full", "pseudo"]
 
@@ -13,8 +14,8 @@ class AugmentedDataLoader:
         augmentation_transforms: list,
         batch_size: int,
         subset_len: int,
-        transformation_device: str = "cpu",
-        return_on_device: str = "cpu",
+        transformation_device: Union[str, torch.device] = "cpu",
+        return_on_device: Union[str, torch.device] = "cpu",
         debug_path: str = None,
         shuffle_mode: str = "full"
     ):
@@ -67,17 +68,17 @@ class AugmentedDataLoader:
         return augmented_image.to(self.return_on_device), augmented_segmentation.to(self.return_on_device)
     
     def _generate_batches(self, image_batch, segmentation_batch):
-        paired_image_batch, paired_segmentation_batch = self._pair_shuffle(image_batch, segmentation_batch)
+        image_batch, segmentation_batch = self._pair_shuffle(image_batch, segmentation_batch)
         batch_num = 0
         
-        for i in range(0, len(paired_image_batch), self.batch_size):
-            batch_images = paired_image_batch[i:i + self.batch_size]
-            batch_segmentations = paired_segmentation_batch[i:i + self.batch_size]
+        for i in range(0, len(image_batch), self.batch_size):
+            batch_images = image_batch[i:i + self.batch_size]
+            batch_segmentations = segmentation_batch[i:i + self.batch_size]
             
             batch_images = torch.stack(batch_images, dim=0)
             batch_segmentations = torch.stack(batch_segmentations, dim=0)
             
-            seg_or_label_batch = batch_segmentations if self.has_segmentations else torch.tensor(batch_segmentations).to(self.return_on_device)
+            seg_or_label_batch = batch_segmentations if self.has_segmentations else torch.tensor(batch_segmentations)
             
             if self.debug_path: 
                 save_subplot(batch_images, self.debug_path, batch_num)
@@ -104,7 +105,7 @@ class AugmentedDataLoader:
                     augmented_image_super_batch.append(augmented_image)
                     augmented_segmentation_super_batch.append(augmented_segmentation)
                     augmented_image_super_batch.append(data[0].float().to(self.return_on_device))
-                    augmented_segmentation_super_batch.append(data[1].float().to(self.return_on_device) if self.has_segmentations else torch.tensor(data[1]).float())
+                    augmented_segmentation_super_batch.append(data[1].float().to(self.return_on_device) if self.has_segmentations else torch.tensor(data[1]).float().to(self.return_on_device))
 
             yield from self._generate_batches(augmented_image_super_batch, augmented_segmentation_super_batch)
             del augmented_image_super_batch, augmented_segmentation_super_batch
@@ -135,7 +136,7 @@ class AugmentedDataLoader:
             original_batch_img = [data[0].float().to(self.return_on_device) for data in subset]
             original_batch_seg = ([data[1].float().to(self.return_on_device) for data in subset]
                                   if self.has_segmentations 
-                                  else [torch.tensor(data[1]).float() for data in subset])
+                                  else [torch.tensor(data[1]).float().to(self.return_on_device) for data in subset])
             
             yield from self._generate_batches(original_batch_img, original_batch_seg)
             del original_batch_img, original_batch_seg

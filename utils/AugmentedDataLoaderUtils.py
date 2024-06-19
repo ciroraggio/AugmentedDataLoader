@@ -64,7 +64,8 @@ def save_subplot_i2i(batch_first_images, batch_second_images, output_path, batch
         plt.subplots_adjust(wspace=0.5)
 
         plt.savefig(os.path.join(output_path, f'batch{batch_num}_images_{i}_slice_{central_slice_idx}.png'))
-    
+        plt.close()
+
 
 def measure_gpu_memory(message=""):
     allocated_memory = torch.cuda.memory_allocated()

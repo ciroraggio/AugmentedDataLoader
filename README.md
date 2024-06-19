@@ -10,7 +10,6 @@ Medical image augmentation tool that can be integrated with Pytorch & MONAI, by 
     - [AugmentedDataLoader](#augmenteddataloader-1)
     - [AugmentedImageToImageDataLoader](#augmentedimagetoimagedataloader)
 - [Workflow](#workflow)
-- [Changelog](#changelog)
 
 # 🆕⚠️ New features and improvements will be introduced with the v3.0 release that may cause incompatibility with previous versions. Please read the documentation and update your code! ⚠️🆕
 
@@ -178,21 +177,3 @@ The workflow shown in the figure refers to [shuffle_mode="full"](#how-it-works-a
 
 ![AugmentedDataLoaderWorkflow](./assets/workflow.png)
 
-# Changelog
-- v3.0a:
-
-  - Introduced two different augmentation modes to optimize memory or time according to use cases with the parameter “shuffle_mode”
-  - Batches are returned in the same manner as for PyTorch and MONAI dataloaders [B, C, H, W]. There is no longer a need to iterate over batches to extract pairs.
-  - Bug fixes
-
-- v2.1:
-
-  - Added compatibility with random MONAI transformations for both loaders dataloaders (AugmentedDataLoader and AugmentedImageToImageDataLoader)
-  - Uniformed the parameters of the AugmentedDataLoader class with those of the ImageToImageAugmentedDataLoader class
-- v2.0:
-
-  - Added a new dataset (ImageToImageDataset) and a new dataloader (AugmentedImageToImageDataLoader) to support cases in which the user wants to augment two images associated with a simultaneous mask/segmentation
-  - Fixed bugs on returning batches in AugmentedDataLoader
-  - Updated documentation
-- v1.0 Refactorings and bug fixes
-- v1.0a AugmentedDataLoader released

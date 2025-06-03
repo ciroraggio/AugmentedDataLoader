@@ -1,9 +1,12 @@
 # AugmentedDataLoader
 
+### 🆕⚠️ Now available on [PyPI](https://pypi.org/project/AugmentedDataLoader/)
+
 Medical image augmentation tool that can be integrated with Pytorch & MONAI, by Ciro B. Raggio and P. Zaffino.
 
 - [AugmentedDataLoader](#augmenteddataloader)
-- [🆕⚠️ New features and improvements will be introduced with the v3.0 release that may cause incompatibility with previous versions. Please read the documentation and update your code! ⚠️🆕](#️-new-features-and-improvements-will-be-introduced-with-the-v30-release-that-may-cause-incompatibility-with-previous-versions-please-read-the-documentation-and-update-your-code-️)
+    - [🆕⚠️ Now available on PyPI](#️-now-available-on-pypi)
+  - [Installation](#installation)
   - [Description](#description)
   - [How it works and how to use it](#how-it-works-and-how-to-use-it)
     - [Snippets](#snippets)
@@ -11,7 +14,8 @@ Medical image augmentation tool that can be integrated with Pytorch & MONAI, by 
     - [AugmentedImageToImageDataLoader](#augmentedimagetoimagedataloader)
 - [Workflow](#workflow)
 
-# 🆕⚠️ New features and improvements will be introduced with the v3.0 release that may cause incompatibility with previous versions. Please read the documentation and update your code! ⚠️🆕
+## Installation
+`pip install AugmentedDataLoader`
 
 ## Description
 
@@ -54,9 +58,9 @@ You just declare:
 Declare an AugmentedDataLoader and receive the augmented images on the fly!
 
 ```python
-from monai.transforms import Rotate, Flip, Compose, Resize
+from monai.transforms import Rotate, RandRotate,Flip, Compose, Resize
 from monai.data import ImageDataset
-from AugmentedDataLoader import AugmentedDataLoader
+from AugmentedDataLoader.loaders import AugmentedDataLoader
 
 # ImageDataset params
 images_to_transform = [...]
@@ -113,9 +117,9 @@ Declare an AugmentedImageToImageDataLoader and receive the augmented images on t
 
 ```python
 import os
-from monai.transforms import Flip, Compose, Resize
-from loaders.AugmentedImageToImageDataLoader import AugmentedImageToImageDataLoader
-from datasets.ImageToImageDataset import ImageToImageDataset
+from monai.transforms import RandRotate, Flip, Compose, Resize
+from AugmentedDataLoader.loaders import AugmentedImageToImageDataLoader
+from AugmentedDataLoader.datasets import ImageToImageDataset
 
 first_type_image_path = ".../data/first_type_img_dir/"
 second_type_image_path = ".../data/second_type_img_dir/"
@@ -173,7 +177,6 @@ for img_batch_f, img_batch_s, seg_batch in augmented_data_loader:
 ```
 
 # Workflow
-The workflow shown in the figure refers to [shuffle_mode="full"](#how-it-works-and-how-to-use-it).
+The example workflow shown in the figure refers to [shuffle_mode="full"](#how-it-works-and-how-to-use-it).
 
-![AugmentedDataLoaderWorkflow](./assets/workflow.png)
-
+![AugmentedDataLoaderWorkflow](https://raw.githubusercontent.com/ciroraggio/AugmentedDataLoader/refs/heads/master/assets/workflow.png)

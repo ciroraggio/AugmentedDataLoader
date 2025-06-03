@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools >= 69.2.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "AugmentedDataLoader"
+version = "3.0.1"
+authors = [
+  { name="Ciro Benito Raggio", email="ciro.raggio@kit.edu" },
+  { name="Paolo Zaffino", email="p.zaffino@unicz.it" },
+]
+description = "Medical image augmentation tool integrated with PyTorch & MONAI."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/ciroraggio/AugmentedDataLoader"
+Issues = "https://github.com/ciroraggio/AugmentedDataLoader/issues"

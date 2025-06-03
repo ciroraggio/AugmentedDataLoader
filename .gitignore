@@ -1,8 +1,11 @@
 .vscode/*
-benchmark/data/PDDCA-1.4.1_part1/*
-benchmark/data/PDDCA-1.4.1_part2/*
-benchmark/data/debug_path_test/*
-benchmark/*.log
-benchmark/*.txt
+*benchmark*
 *.pyc
 *.ipynb
+*.egg-info/
+dist/
+build/
+__pycache__/
+*.log
+*.txt
+*.sh

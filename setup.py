@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="AugmentedDataLoader",
-    version="3.0.3",  
+    version="3.0.4",  
     author="Ciro B. Raggio, P. Zaffino",
     author_email="ciro.raggio@kit.edu",
     description="Medical image augmentation tool integrated with PyTorch & MONAI.",

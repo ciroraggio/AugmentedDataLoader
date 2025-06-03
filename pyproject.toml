@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "AugmentedDataLoader"
-version = "3.0.3"
+version = "3.0.4"
 authors = [
   { name="Ciro Benito Raggio", email="ciro.raggio@kit.edu" },
   { name="Paolo Zaffino", email="p.zaffino@unicz.it" },

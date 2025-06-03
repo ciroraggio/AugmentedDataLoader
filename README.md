@@ -1,11 +1,8 @@
 # AugmentedDataLoader
 
-### 🆕⚠️ Now available on [PyPI](https://pypi.org/project/AugmentedDataLoader/)
-
 Medical image augmentation tool that can be integrated with Pytorch & MONAI, by Ciro B. Raggio and P. Zaffino.
 
 - [AugmentedDataLoader](#augmenteddataloader)
-    - [🆕⚠️ Now available on PyPI](#️-now-available-on-pypi)
   - [Installation](#installation)
   - [Description](#description)
   - [How it works and how to use it](#how-it-works-and-how-to-use-it)
@@ -15,7 +12,8 @@ Medical image augmentation tool that can be integrated with Pytorch & MONAI, by 
 - [Workflow](#workflow)
 
 ## Installation
-`pip install AugmentedDataLoader`
+AugmentedDataLoader is compatible with Python >= 3.9 and binaries are available on [PyPi](https://pypi.org/).
+`python -m pip install AugmentedDataLoader`
 
 ## Description
 

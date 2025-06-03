@@ -1,3 +1,3 @@
 from importlib.metadata import version
 
-version = version("AugmentedDataLoader")
+__version__ = version("AugmentedDataLoader")

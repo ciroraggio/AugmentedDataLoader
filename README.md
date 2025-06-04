@@ -1,5 +1,8 @@
 # AugmentedDataLoader
 
+[![PyPI version](https://img.shields.io/pypi/v/AugmentedDataLoader)](https://pypi.org/project/AugmentedDataLoader/)
+![License](https://img.shields.io/pypi/l/AugmentedDataLoader)
+
 Medical image augmentation tool that can be integrated with Pytorch & MONAI, by Ciro B. Raggio and P. Zaffino.
 
 - [AugmentedDataLoader](#augmenteddataloader)
@@ -13,6 +16,7 @@ Medical image augmentation tool that can be integrated with Pytorch & MONAI, by 
 
 ## Installation
 AugmentedDataLoader is compatible with Python >= 3.9 and binaries are available on [PyPi](https://pypi.org/).
+
 `python -m pip install AugmentedDataLoader`
 
 ## Description
@@ -61,8 +65,12 @@ from monai.data import ImageDataset
 from AugmentedDataLoader.loaders import AugmentedDataLoader
 
 # ImageDataset params
-images_to_transform = [...]
-seg_to_transform = [...]
+image_path = ".../data/img_dir/"
+seg_path = ".../data/mask_dir/"
+
+# ImageDataset params
+images_to_transform = [f"{image_path}/{img}" for img in os.listdir(image_path)]
+seg_to_transform = [f"{seg_path}/{mask}" for mask in os.listdir(seg_path)]
 
 each_image_trans = Compose([
     # ...transformations to apply to all images here...
@@ -177,4 +185,4 @@ for img_batch_f, img_batch_s, seg_batch in augmented_data_loader:
 # Workflow
 The example workflow shown in the figure refers to [shuffle_mode="full"](#how-it-works-and-how-to-use-it).
 
-![AugmentedDataLoaderWorkflow](https://raw.githubusercontent.com/ciroraggio/AugmentedDataLoader/refs/heads/master/assets/workflow.png)
+![AugmentedDataLoaderWorkflow](https://raw.githubusercontent.com/ciroraggio/AugmentedDataLoader/refs/heads/master/AugmentedDataLoader/assets/workflow.png)

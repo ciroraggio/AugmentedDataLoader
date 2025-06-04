@@ -18,6 +18,11 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies = [
+    "monai",
+    "torch",
+    "matplotlib"
+]
 
 [project.urls]
 Homepage = "https://github.com/ciroraggio/AugmentedDataLoader"
